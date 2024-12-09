@@ -1,32 +1,54 @@
-# views.py
-from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserSerializer
-from django.contrib.auth import authenticate
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
+from .serializers import RegisterSerializer, LoginSerializer, LogoutSerializer
+import logging
 
-# User Registration View
-@api_view(['POST'])
-def register(request):
-    if request.method == 'POST':
-        serializer = UserSerializer(data=request.data)
+auth_logger = logging.getLogger('app_login')
+registration_logger = logging.getLogger('app_register')
+logout_logger = logging.getLogger('app_logout')
+
+
+class RegisterAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            registration_logger.info(f"User {user.username} registered successfully.")
+            return Response({"message": "User created successfully"}, status=HTTP_201_CREATED)
+        registration_logger.warning(f"Registration failed: {serializer.errors}")
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-# User Login View (returns JWT token)
-@api_view(['POST'])
-def login(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-    user = authenticate(username=username, password=password)
-    
-    if user is not None:
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        })
-    return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data
+            token, _ = Token.objects.get_or_create(user=user)
+            auth_logger.info(f"User {user.username} logged in.")
+            return Response({"token": token.key}, status=HTTP_200_OK)
+        auth_logger.warning(f"Login failed: {serializer.errors}")
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class LogoutAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = LogoutSerializer(data=request.data)
+        if serializer.is_valid():
+            token = serializer.validated_data
+            token.delete()
+            auth_logger.info(f"User {request.user.username} logged out.")
+            return Response({"message": "Logged out successfully"}, status=HTTP_200_OK)
+        auth_logger.warning(f"Logout failed: {serializer.errors}")
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
