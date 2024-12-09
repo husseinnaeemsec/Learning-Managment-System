@@ -1,10 +1,10 @@
 # serializers.py
-from django.contrib.auth import get_user_model
+from users.models import User
 from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ['id', 'username', 'email', 'role', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
@@ -15,5 +15,10 @@ class UserSerializer(serializers.ModelSerializer):
         return data
         
     def create(self, validated_data):
-        user = get_user_model().objects.create_user(**validated_data)
+        # Remove the 'role' field from validated_data entirely
+        validated_data.pop('role', None)  # Remove the role field if it exists
+
+        # Create the user (without assigning a role)
+        user = User.objects.create_user(**validated_data)
+        user.save()  # Save the user without the role
         return user
