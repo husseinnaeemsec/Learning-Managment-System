@@ -1,2 +1,7 @@
+# Ignore logs and .env files
 logs/
 .env
+
+# Ignore Python bytecode files and __pycache__ directories
+__pycache__/
+*.pyc
