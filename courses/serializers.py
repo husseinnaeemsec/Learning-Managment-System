@@ -15,8 +15,7 @@ class LectureSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CourseSerializer(serializers.ModelSerializer):
-    lectures = LectureSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
-        fields = '__all__'
+        fields = ['id','title','description']

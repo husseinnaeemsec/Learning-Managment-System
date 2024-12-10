@@ -8,6 +8,9 @@ class Course(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'teacher'})
     students = models.ManyToManyField(User, related_name='courses', limit_choices_to={'role': 'student'})
 
+    created_at = models.DateTimeField(auto_now_add=True,null=True)
+    updated_at = models.DateTimeField(auto_now=True,null=True)
+
     def __str__(self):
         return self.title
 
