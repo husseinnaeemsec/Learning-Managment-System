@@ -3,5 +3,7 @@ logs/
 .env
 
 # Ignore Python bytecode files and __pycache__ directories
-__pycache__/
-*.pyc
+**/__pycache__/
+
+# Ignore all .pyc files at any level
+**/*.pyc
