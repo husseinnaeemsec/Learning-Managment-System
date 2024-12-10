@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt.token_blacklist',
+    'rest_framework_simplejwt',
     # Platform apps
     'users.apps.UsersConfig',
     'courses.apps.CoursesConfig',
@@ -67,18 +68,18 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',  # Token-based
-        'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT-based
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',  # Default to require authentication
+        'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
 
 # JWT Settings (optional customization)
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
@@ -86,7 +87,7 @@ SIMPLE_JWT = {
     'VERIFYING_KEY': None,
     'AUDIENCE': None,
     'ISSUER': None,
-    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_TYPES': ('Bearer','JWT'),
 }
 
 # Logging 
@@ -161,6 +162,7 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+
 
         # Test loggers
         'test_login': {
